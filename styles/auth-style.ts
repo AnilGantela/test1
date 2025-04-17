@@ -12,19 +12,23 @@ export const styles = StyleSheet.create({
   },
   brandSection: {
     height: 300,
+    marginTop: -100, // Center content horizontally
     justifyContent: "center", // Center content vertically
     alignItems: "center", // Center content horizontally
   },
   logo: {
     width: width * 0.9,
     height: 300,
-    resizeMode: "contain",
+    resizeMode: "cover",
+    marginLeft: -20,
   },
   loginSection: {
     width: "100%",
     paddingHorizontal: 24,
     paddingBottom: 10,
-    alignItems: "center", // Center content horizontally
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -60, // Center content horizontally
   },
   googleButton: {
     width: width - 50,

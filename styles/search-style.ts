@@ -4,6 +4,40 @@ import { COLORS } from "@/constants/theme";
 const { height, width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
+  emptyCart: {
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
+  emptyImage: {
+    width: "100%", // Make the image take the full width
+    height: 250, // Set a fixed height, adjust as needed
+  },
+  emptyText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 20,
+    textAlign: "center",
+  },
+  subText: {
+    fontSize: 16,
+    color: "#888",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  searchButton: {
+    backgroundColor: COLORS.SECONDARY, // You can customize the button color
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -19,7 +53,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: COLORS.SECONDARY,
     padding: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -31,6 +65,25 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.WHITE,
     borderRadius: 8,
     elevation: 2,
+  },
+  filterWrapper: {
+    marginHorizontal: 12,
+    marginVertical: 10,
+    backgroundColor: COLORS.SECONDARY,
+  },
+  pickerContainer: { backgroundColor: COLORS.SECONDARY },
+  filterLabel: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: COLORS.WHITE,
+    fontWeight: "600",
+  },
+  picker: {
+    height: 48,
+    backgroundColor: COLORS.SECONDARY,
+    borderRadius: 8,
+    justifyContent: "center",
+    color: COLORS.WHITE,
   },
   clearButton: {
     position: "absolute",

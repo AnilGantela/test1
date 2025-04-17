@@ -6,11 +6,45 @@ const { height, width } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.WHITE,
+    color: COLORS.SECONDARY,
+    justifyContent: "center",
   },
+  profileRow: {
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+    flexDirection: "column", // 👈 Stack vertically
+  },
+  avatar: {
+    width: width * 0.3,
+    height: width * 0.3,
+    borderRadius: (width * 0.3) / 2, // 👈 Perfect circle
+    backgroundColor: "#eee",
+    marginBottom: 12,
+    color: COLORS.SECONDARY, // 👈 Space between image and name
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  email: {
+    marginTop: 4,
+    textAlign: "center",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: COLORS.SECONDARY,
+  },
+
   scrollContainer: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 10,
+    height: height * 0.4,
   },
   container: {
     flex: 1,
@@ -23,35 +57,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
   },
-  profileRow: {
-    marginTop: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-    flexDirection: "column", // 👈 Stack vertically
-  },
-  avatar: {
-    width: width * 0.3,
-    height: width * 0.3,
-    borderRadius: (width * 0.3) / 2, // 👈 Perfect circle
-    backgroundColor: "#eee",
-    marginBottom: 12, // 👈 Space between image and name
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  email: {
-    color: "#666",
-    marginTop: 4,
-    textAlign: "center",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
+
   emptyText: {
     color: "#888",
     fontStyle: "italic",
@@ -61,6 +67,9 @@ export const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   searchQuery: {
     fontSize: 16,
@@ -74,6 +83,8 @@ export const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     width: "80%",
+    marginBottom: 5,
+    marginHorizontal: 30,
   },
   logoutText: {
     color: "#fff",
@@ -81,20 +92,7 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  bottomSection: {
-    height: 200,
-    bottom: -height * 0.5,
-    position: "absolute",
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    paddingVertical: 10,
-    backgroundColor: "#fff",
-    width: width,
-    flex: 1,
-    justifyContent: "space-evenly",
-    alignItems: "center",
-    marginBottom: 10,
-  },
+  bottomSection: {},
 
   iconRow: {
     flexDirection: "row",
@@ -106,7 +104,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
+    paddingVertical: 10,
     marginHorizontal: 5,
     borderRadius: 16,
     shadowColor: "#000",
@@ -114,6 +112,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 10,
     minWidth: (width - 80) / 3,
   },
 

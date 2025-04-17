@@ -7,19 +7,156 @@ const isWeb = width > 768;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.SECONDARY,
     color: "#5f5fd4",
-    paddingTop: 20,
+    width: width,
   },
   topContainer: {
-    height: 120,
+    height: 65,
     paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "99%",
+    backgroundColor: COLORS.WHITE,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  locationText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.PRIMARY,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  logo: {
+    width: 200,
+    height: 60,
+    resizeMode: "cover",
+  },
+  bottomContainer: {
+    flex: 1,
+  },
+  searchBarContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0F0F0",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  searchText: {
+    marginLeft: 8,
+    color: COLORS.ACCENT1,
+    fontSize: 16,
   },
   adContainer: {
     height: 250,
-    paddingHorizontal: 16,
     marginBottom: 10,
   },
+  productSection: {
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.WHITE,
+    paddingTop: 10,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+    color: COLORS.SECONDARY,
+  },
+  dealCard: {
+    width: 170,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    overflow: "hidden",
+    margin: 8,
+    elevation: 2,
+    position: "relative",
+  },
+
+  imageWrapper: {
+    position: "relative",
+    width: "100%",
+    height: 170,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    overflow: "hidden",
+  },
+
+  dealImage: {
+    width: "100%",
+    height: "100%",
+    marginTop: 30,
+    resizeMode: "contain",
+  },
+
+  discountBadge: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    backgroundColor: "red",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    zIndex: 1,
+  },
+
+  discountText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+  dealInfoContainer: {
+    padding: 8,
+    paddingBottom: 30, // make space for price at bottom
+    position: "relative",
+    minHeight: 80,
+  },
+
+  dealTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
+  },
+
+  priceContainer: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+
+  dealPrice: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#000",
+  },
+
+  priceTag: {
+    position: "absolute",
+    bottom: 6,
+    right: 6,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    zIndex: 1,
+  },
+
   locationIcon: {
     padding: 6,
     backgroundColor: COLORS.WHITE,
@@ -29,64 +166,17 @@ export const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  logo: {
-    width: 150,
-    height: 80,
-    resizeMode: "contain",
-    alignSelf: "center",
-    marginTop: -25,
-    marginLeft: isWeb ? 0 : 50,
-  },
-  productSection: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginVertical: 10,
-    color: "#5f5fd4",
-  },
-  dealCard: {
-    width: 160,
-    height: 240,
-    marginRight: 12,
-    marginBottom: 20,
-    marginTop: 10,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8, // Android shadow
-  },
 
-  dealImage: {
-    width: "100%",
-    height: 140,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-
-  dealInfoContainer: {
-    flex: 1,
-    padding: 8,
-    justifyContent: "flex-end",
-  },
-
-  dealTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333",
-  },
-
-  dealPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginTop: 4,
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 999,
   },
 
   dealDiscount: {
