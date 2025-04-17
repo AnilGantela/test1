@@ -1,12 +1,16 @@
 import { Text, View, TouchableOpacity, Linking } from "react-native";
 import React, { Component } from "react";
 import { styles } from "@/styles/searchelement-style";
+import { router } from "expo-router"; // Assuming you're using expo-router
 
 export class SearchElement extends Component {
   handlePress = () => {
     const { itemDetails } = this.props;
+
     if (itemDetails?.productLink) {
       Linking.openURL(itemDetails.productLink);
+    } else if (itemDetails?._id) {
+      router.push(`tabs/search/${itemDetails._id}`);
     }
   };
 

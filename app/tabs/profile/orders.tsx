@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,35 +6,54 @@ import {
   StyleSheet,
   ScrollView,
   Linking,
+  ActivityIndicator,
 } from "react-native";
+import axios from "axios";
+import { useUser } from "@clerk/clerk-expo";
 
 export default function OrdersScreen() {
-  const handleTrackOrder = (orderId) => {
-    // Replace with your own order tracking URL
+  const { user } = useUser();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const handleTrackOrder = (orderId: string) => {
     Linking.openURL(`https://your-order-tracking-url.com/order/${orderId}`);
   };
 
-  // Sample orders data
-  const orders = [
-    {
-      id: "ORD12345",
-      status: "Shipped",
-      date: "2025-04-01",
-      total: "$50.00",
-    },
-    {
-      id: "ORD12346",
-      status: "Delivered",
-      date: "2025-03-28",
-      total: "$120.00",
-    },
-    {
-      id: "ORD12347",
-      status: "Processing",
-      date: "2025-04-05",
-      total: "$80.00",
-    },
-  ];
+  const parseDecimal = (value: any) => {
+    if (!value) return "0";
+    if (typeof value === "object" && "$numberDecimal" in value)
+      return value.$numberDecimal;
+    return value.toString?.() || "0";
+  };
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await axios.get(
+          `https://pricepick-1032723282466.us-central1.run.app/orders/user/${user?.id}`
+        );
+        setOrders(res.data);
+      } catch (error) {
+        console.error("❌ Error fetching orders", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchOrders();
+    }
+  }, [user?.id]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+        <Text style={{ marginTop: 10 }}>Loading your orders...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -43,22 +62,64 @@ export default function OrdersScreen() {
         View your past orders and track their status.
       </Text>
 
-      {orders.map((order) => (
-        <View key={order.id} style={styles.orderItem}>
-          <Text style={styles.orderId}>Order ID: {order.id}</Text>
-          <Text style={styles.orderStatus}>Status: {order.status}</Text>
-          <Text style={styles.orderDate}>Date: {order.date}</Text>
-          <Text style={styles.orderTotal}>Total: {order.total}</Text>
+      {orders.length === 0 ? (
+        <Text style={styles.noOrdersText}>No orders found.</Text>
+      ) : (
+        orders.map((order) => (
+          <View key={order._id} style={styles.orderItem}>
+            <Text style={styles.orderId}>Order ID: {order._id}</Text>
+            <Text style={styles.orderStatus}>Status: {order.status}</Text>
+            <Text style={styles.orderDate}>
+              Date: {new Date(order.createdAt).toLocaleDateString()}
+            </Text>
+            <Text style={styles.orderTotal}>
+              Total: ₹{parseDecimal(order.totalAmount)}
+            </Text>
 
-          {/* Track Order Button */}
-          <TouchableOpacity
-            style={styles.trackButton}
-            onPress={() => handleTrackOrder(order.id)}
-          >
-            <Text style={styles.trackButtonText}>Track Order</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
+            <Text style={styles.sectionTitle}>Delivery Address</Text>
+            <Text style={styles.addressText}>
+              {order.deliveryAddress.name}, {order.deliveryAddress.phone}
+            </Text>
+            <Text style={styles.addressText}>
+              {order.deliveryAddress.addressLine1},{" "}
+              {order.deliveryAddress.addressLine2}
+            </Text>
+            <Text style={styles.addressText}>
+              {order.deliveryAddress.city}, {order.deliveryAddress.state} -{" "}
+              {order.deliveryAddress.pincode}
+            </Text>
+
+            <Text style={styles.sectionTitle}>Products</Text>
+            {order.products.map((product) => (
+              <View key={product._id} style={styles.productItem}>
+                <Text style={styles.productName}>{product.name}</Text>
+                <Text style={styles.productDetails}>
+                  Price: ₹{product.price} x {product.quantity}
+                </Text>
+              </View>
+            ))}
+
+            <Text style={styles.sectionTitle}>Payment Details</Text>
+            <Text style={styles.paymentText}>
+              Payment Method: {order.paymentId.method}
+            </Text>
+            <Text style={styles.paymentText}>
+              Payment Status:{" "}
+              {order.paymentId.status === "paid" ? "Paid" : "Pending"}
+            </Text>
+            <Text style={styles.paymentText}>
+              Amount Paid: ₹{parseDecimal(order.paymentId.amount)}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.trackButton}
+              onPress={() => handleTrackOrder(order._id)}
+            >
+              <Text style={styles.trackButtonText}>Track Order</Text>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
 
       <Text style={styles.supportSectionTitle}>Need Help?</Text>
       <Text style={styles.supportDetails}>
@@ -71,9 +132,13 @@ export default function OrdersScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
     backgroundColor: "#f9f9f9",
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
@@ -85,6 +150,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 30,
     color: "#555",
+  },
+  noOrdersText: {
+    textAlign: "center",
+    color: "#777",
+    fontSize: 16,
+    marginTop: 30,
   },
   orderItem: {
     backgroundColor: "#fff",
@@ -113,6 +184,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#333",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 15,
+  },
+  addressText: {
+    fontSize: 14,
+    color: "#555",
+  },
+  productItem: {
+    marginTop: 10,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  productDetails: {
+    fontSize: 14,
+    color: "#555",
+  },
+  paymentText: {
+    fontSize: 14,
+    color: "#555",
   },
   trackButton: {
     backgroundColor: "#007BFF",

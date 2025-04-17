@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { COLORS } from "@/constants/theme";
 
 export default function SearchStackLayout() {
   const router = useRouter();
@@ -21,11 +22,11 @@ export default function SearchStackLayout() {
           title: "",
           headerShown: true,
           headerStyle: {
-            backgroundColor: "#0000c5", // Background color
+            backgroundColor: COLORS.SECONDARY,
           },
-          headerTintColor: "#ffffff", // Text and icon color
+          headerTintColor: "#ffffff",
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.replace("/tabs/search")}>
               <Ionicons name="arrow-back" size={24} color="#ffffff" />
             </TouchableOpacity>
           ),

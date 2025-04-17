@@ -1,11 +1,50 @@
-import { StyleSheet } from "react-native";
+import { COLORS } from "@/constants/theme";
+import { StyleSheet, Dimensions } from "react-native";
+
+const width = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
   // Container and general styles
   container: {
-    padding: 16,
     backgroundColor: "#fff",
+    paddingHorizontal: 16,
   },
+  quantityContainer: {
+    backgroundColor: COLORS.SECONDARY,
+    marginLeft: 10,
+    padding: 10,
+    borderRadius: 10,
+    justifyContent: "space-between",
+    width: width * 0.9,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  quantityButton: {
+    backgroundColor: COLORS.SECONDARY,
+    padding: 8,
+    borderRadius: 20,
+    color: COLORS.WHITE,
+    marginHorizontal: 10,
+  },
+  quantityText: {
+    fontSize: 18,
+    color: "#fff",
+  },
+  addToCartButton: {
+    backgroundColor: COLORS.SECONDARY,
+    padding: 12,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: width * 0.9,
+  },
+  addToCartText: {
+    color: "#fff",
+    fontSize: 18,
+    marginLeft: 10,
+  },
+
   skeletonWrapper: {
     flex: 1,
     justifyContent: "center",
@@ -91,15 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 20,
   },
-  addToCartButton: {
-    backgroundColor: "#2ecc71",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    flex: 1,
-    marginRight: 10,
-    alignItems: "center",
-  },
+
   buyNowButton: {
     backgroundColor: "#3498db",
     paddingVertical: 10,
@@ -111,10 +142,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: "#ccc",
   },
-  addToCartText: {
-    fontSize: 16,
-    color: "#fff",
-  },
+
   buyNowText: {
     fontSize: 16,
     color: "#fff",
@@ -136,7 +164,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    marginVertical: 10,
   },
   retailerText: {
     fontSize: 14,
@@ -179,7 +206,7 @@ const styles = StyleSheet.create({
 
   // Thumbnail Container for Image Carousel
   thumbnailContainer: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "center",
     marginTop: 10,
   },
@@ -199,6 +226,7 @@ const styles = StyleSheet.create({
   // Image Carousel Container (Main Product Image)
   imageCarouselContainer: {
     marginBottom: 20,
+    flexDirection: "row",
   },
   noImageContainer: {
     justifyContent: "center",

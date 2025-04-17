@@ -5,88 +5,57 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useSSO, useUser } from "@clerk/clerk-expo";
 import { styles } from "@/styles/auth-style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const { startSSOFlow } = useSSO();
   const { user, isSignedIn, isLoaded } = useUser();
   const router = useRouter();
+  const [authenticating, setAuthenticating] = useState(false);
+  const [sessionCreated, setSessionCreated] = useState(false);
 
-  // Auth with Google only
   const handleGoogleAuth = async () => {
     try {
+      setAuthenticating(true);
+
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy: "oauth_google",
       });
 
       if (setActive && createdSessionId) {
         await setActive({ session: createdSessionId });
-
-        // ✅ Save user details after successful sign-in
-        setTimeout(async () => {
-          if (user) {
-            const userData = {
-              id: user.id,
-              fullName: `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
-              primaryEmailAddress:
-                user.primaryEmailAddress?.emailAddress ?? null,
-              imageUrl: user.imageUrl ?? null,
-            };
-
-            console.log(
-              "📦 Clerk User Details:\n",
-              JSON.stringify(userData, null, 2)
-            );
-
-            try {
-              const response = await fetch(
-                "https://pricepick-1032723282466.us-central1.run.app/app/saveUser",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(userData),
-                }
-              );
-
-              if (!response.ok) {
-                throw new Error(
-                  `❌ API request failed with status ${response.status}`
-                );
-              }
-
-              console.log("✅ User saved to API:", userData);
-              await AsyncStorage.setItem(
-                "cachedUser",
-                JSON.stringify(userData)
-              );
-              console.log("💾 User cached successfully");
-            } catch (error) {
-              console.error("🚨 Error saving user details:", error);
-            }
-          } else {
-            console.warn(
-              "⚠️ Clerk user not available immediately after sign-in"
-            );
-          }
-
-          router.replace("/tabs");
-        }, 1000); // slight delay to ensure Clerk updates `user`
+        setSessionCreated(true);
+        router.replace("/tabs"); // ✅ Let useEffect handle next part
       }
     } catch (error) {
-      console.log("Google OAuth-error: ", error);
+      console.error("Google OAuth-error: ", error);
+      setAuthenticating(false);
     }
   };
 
-  // Show loading screen while Clerk is loading
-  if (!isLoaded) {
+  // 🧠 useEffect to wait until user is available
+  useEffect(() => {
+    if (user && isSignedIn && sessionCreated) {
+      console.log("User signed in:");
+      router.replace("/tabs");
+    }
+  }, [isSignedIn, isLoaded, user, sessionCreated]);
+
+  // Show loading screen while waiting for Clerk session to load
+  if (!isLoaded || authenticating) {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#007aff" />
-        <Text style={styles.logText}>Loading user info...</Text>
+        <Text style={styles.logText}>
+          {authenticating ? "Authenticating..." : "Loading user info..."}
+        </Text>
       </View>
     );
   }

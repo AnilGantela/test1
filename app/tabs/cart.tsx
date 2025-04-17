@@ -1,12 +1,28 @@
-import { View, Text, FlatList, Pressable, Alert, Image } from "react-native";
 import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Alert,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import styles from "@/styles/cart-style";
-import Icon from "react-native-vector-icons/Feather"; // Add this import at the top
+import Icon from "react-native-vector-icons/Feather";
+import OrderBill from "@/components/OrderBill";
 
 export default function CartScreen() {
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [showOrderBill, setShowOrderBill] = useState(false);
+  const router = useRouter();
+
+  const handleSearchRedirect = () => {
+    router.push("/tabs/search");
+  };
 
   const calculateTotal = () => {
     let totalPrice = 0;
@@ -39,7 +55,7 @@ export default function CartScreen() {
     const item = updatedCart[index];
     const newQuantity = item.quantity + change;
 
-    if (newQuantity < 1) return; // Don't allow quantity < 1
+    if (newQuantity < 1) return;
 
     updatedCart[index] = {
       ...item,
@@ -55,16 +71,21 @@ export default function CartScreen() {
       const updatedCart = cartItems.filter((_, idx) => idx !== index);
       await AsyncStorage.setItem("cart", JSON.stringify(updatedCart));
       setCartItems(updatedCart);
-      Alert.alert("Success", "Item removed from cart!");
     } catch (error) {
       console.error("Error removing item:", error);
       Alert.alert("Error", "Failed to remove item from cart.");
     }
   };
 
-  const handleBuyNow = () => {
-    // You can customize this to navigate to a checkout page
-    Alert.alert("Proceeding to Checkout", "Redirecting to checkout...");
+  const handleCheckout = () => {
+    setShowOrderBill(true);
+  };
+
+  const handlePay = async () => {
+    setShowOrderBill(false);
+    Alert.alert("Success", "Payment successful!");
+    await AsyncStorage.removeItem("cart");
+    setCartItems([]);
   };
 
   useFocusEffect(
@@ -75,7 +96,6 @@ export default function CartScreen() {
 
   const renderItem = ({ item, index }: any) => (
     <View style={styles.cartItem}>
-      {/* Product Image */}
       {item.image ? (
         <Image source={{ uri: item.image }} style={styles.productImage} />
       ) : (
@@ -89,7 +109,6 @@ export default function CartScreen() {
           {item.productName}
         </Text>
 
-        {/* Shop Name, Price, and Discount in the same line */}
         <View style={styles.rowContainer}>
           <Text style={styles.shopName}>{item.shopName}</Text>
           <Text style={styles.productPrice}>
@@ -97,7 +116,6 @@ export default function CartScreen() {
           </Text>
         </View>
 
-        {/* Quantity controls and Remove button in the same line */}
         <View style={styles.quantityAndRemoveContainer}>
           <View style={styles.quantityControls}>
             <Pressable
@@ -117,7 +135,6 @@ export default function CartScreen() {
             </Pressable>
           </View>
 
-          {/* Remove button */}
           <Pressable
             onPress={() => handleRemoveItem(index)}
             style={styles.removeButton}
@@ -135,7 +152,23 @@ export default function CartScreen() {
     <View style={styles.container}>
       {cartItems.length === 0 ? (
         <View style={styles.emptyCart}>
-          <Text style={styles.emptyText}>🛒 Your Cart is Empty</Text>
+          <Image
+            source={require("@/assets/images/empty-cart.png")}
+            style={styles.emptyImage}
+            resizeMode="contain" // Makes sure the image fits within the container without distortion
+          />
+          <Text style={styles.emptyText}>
+            🛒 Whoops! Your cart’s still empty.
+          </Text>
+          <Text style={styles.subText}>
+            Let’s find something awesome to add!
+          </Text>
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={handleSearchRedirect}
+          >
+            <Text style={styles.buttonText}>Browse Products</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -154,11 +187,20 @@ export default function CartScreen() {
           <Text style={styles.totalDiscount}>
             Total Saved: ₹{totalDiscount.toLocaleString()}
           </Text>
-          <Pressable onPress={handleBuyNow} style={styles.buyButton}>
-            <Text style={styles.buyButtonText}>Buy Now</Text>
+          <Pressable onPress={handleCheckout} style={styles.buyButton}>
+            <Text style={styles.buyButtonText}>Checkout</Text>
           </Pressable>
         </View>
       )}
+
+      <OrderBill
+        visible={showOrderBill}
+        onClose={() => setShowOrderBill(false)}
+        cartItems={cartItems}
+        totalPrice={totalPrice}
+        totalDiscount={totalDiscount}
+        onPay={handlePay}
+      />
     </View>
   );
 }

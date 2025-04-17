@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { useUser, useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "@/styles/profile-styles";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 interface SearchItem {
   query: string;
@@ -27,6 +28,12 @@ const ProfileDetails: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+      // Clear all cached data
+      await AsyncStorage.removeItem("cachedUser");
+      await AsyncStorage.removeItem("cacheAddress"); // Remove cachedAddress
+      console.log("🧹 Cache cleared.");
+
+      // Sign out the user
       await signOut();
       console.log("🧹 User signed out.");
       router.replace("/");
@@ -77,24 +84,23 @@ const ProfileDetails: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.profileRow}>
-          <Image
-            source={{
-              uri: user.imageUrl || "https://via.placeholder.com/100?text=User",
-            }}
-            style={styles.avatar}
-          />
-          <View>
-            <Text style={styles.name}>
-              {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()}
-            </Text>
-            <Text style={styles.email}>
-              {user.primaryEmailAddress?.emailAddress ?? "No email"}
-            </Text>
-          </View>
+      <View style={styles.profileRow}>
+        <Image
+          source={{
+            uri: user.imageUrl || "https://via.placeholder.com/100?text=User",
+          }}
+          style={styles.avatar}
+        />
+        <View>
+          <Text style={styles.name}>
+            {`${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()}
+          </Text>
+          <Text style={styles.email}>
+            ~{user.primaryEmailAddress?.emailAddress ?? "No email"}
+          </Text>
         </View>
-
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.sectionTitle}>Your Recent Searches</Text>
 
         {searches.length === 0 ? (
@@ -115,32 +121,31 @@ const ProfileDetails: React.FC = () => {
             )}
           />
         )}
+      </ScrollView>
 
-        {/* Bottom Buttons */}
-        <View style={styles.bottomSection}>
-          <View style={styles.iconRow}>
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#f1c40f" }]}
-              onPress={() => router.push("/tabs/profile/orders")}
-            >
-              <Ionicons name="clipboard" size={32} color="white" />
-              <Text style={styles.actionButtonLabel}>Orders</Text>
-            </TouchableOpacity>
+      {/* Bottom Buttons */}
+      <View style={styles.bottomSection}>
+        <View style={styles.iconRow}>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: "#f1c40f" }]}
+            onPress={() => router.push("/tabs/profile/orders")}
+          >
+            <Ionicons name="clipboard" size={32} color="white" />
+            <Text style={styles.actionButtonLabel}>Orders</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: "#3498db" }]}
-              onPress={() => router.push("/tabs/profile/support")}
-            >
-              <Ionicons name="headset" size={32} color="white" />
-              <Text style={styles.actionButtonLabel}>Support</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutText}>Logout</Text>
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: "#3498db" }]}
+            onPress={() => router.push("/tabs/profile/support")}
+          >
+            <Ionicons name="headset" size={32} color="white" />
+            <Text style={styles.actionButtonLabel}>Support</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };

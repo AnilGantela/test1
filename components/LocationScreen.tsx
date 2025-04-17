@@ -11,15 +11,18 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
 interface Address {
-  name?: string;
   street?: string;
   city?: string;
   region?: string;
   country?: string;
-  postalCode?: string;
+  pincode?: string;
 }
 
-const LocationScreen: React.FC = () => {
+interface Props {
+  onLocationSelected: (location: Address) => void;
+}
+
+const LocationScreen: React.FC<Props> = ({ onLocationSelected }) => {
   const [address, setAddress] = useState<Address | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +30,10 @@ const LocationScreen: React.FC = () => {
     const loadCachedAddress = async () => {
       try {
         const cached = await AsyncStorage.getItem("cacheAddress");
-        if (cached) setAddress(JSON.parse(cached));
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setAddress(parsed);
+        }
       } catch (error) {
         console.error("🚨 Error loading cached address:", error);
       }
@@ -52,7 +58,7 @@ const LocationScreen: React.FC = () => {
       if (addressData.length > 0) {
         const fetched = addressData[0];
 
-        const simplified = {
+        const simplified: Address = {
           city: fetched.city,
           pincode: fetched.postalCode,
           street: fetched.street,
@@ -62,6 +68,7 @@ const LocationScreen: React.FC = () => {
 
         setAddress(simplified);
         await AsyncStorage.setItem("cacheAddress", JSON.stringify(simplified));
+        onLocationSelected(simplified); // Notify Home screen
       }
     } catch (err) {
       console.error("🚨 Error fetching address:", err);
@@ -73,6 +80,9 @@ const LocationScreen: React.FC = () => {
     <View style={styles.container}>
       {!address && !loading && (
         <TouchableOpacity style={styles.button} onPress={getUserAddress}>
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            Get Location
+          </Text>
           <Ionicons name="location-sharp" size={20} color="#fff" />
         </TouchableOpacity>
       )}
@@ -96,22 +106,15 @@ const styles = StyleSheet.create({
   container: {
     textAlign: "left",
     justifyContent: "center",
-    height: 50,
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#007AFF",
     paddingHorizontal: 16,
-    width: 50,
     paddingVertical: 10,
     borderRadius: 25,
     gap: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
   },
   addressText: {
     fontSize: 16,

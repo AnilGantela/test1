@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   TextInput,
@@ -6,50 +6,45 @@ import {
   Text,
   ActivityIndicator,
   FlatList,
+  Image,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Picker } from "@react-native-picker/picker";
 import { styles } from "@/styles/search-style";
 import SearchElement from "@/components/SearchElement";
 import RecentSearches from "@/components/RecentSearches";
+import { COLORS } from "@/constants/theme";
+import { useRouter } from "expo-router";
 
+// 📌 Add search query to user history
 const addSearchQuery = async (query: string) => {
   try {
-    if (!query.trim()) {
-      console.warn("⚠️ Empty query — skipping addSearch");
-      return;
-    }
+    if (!query.trim()) return;
 
-    const cachedUser = await AsyncStorage.getItem("cachedUser");
-    const parsedUser = JSON.parse(cachedUser);
+    const cacheUser = await AsyncStorage.getItem("cachedUser");
+    const parsedUser = JSON.parse(cacheUser || "{}");
 
-    if (!parsedUser?.id) {
-      console.error("⚠️ User not logged in or missing ID");
-      return;
-    }
+    if (!parsedUser?.clerkId) return;
 
     const response = await fetch(
-      `https://pricepick-1032723282466.us-central1.run.app/app/user/${parsedUser.id}/addsearch`,
+      `https://pricepick-1032723282466.us-central1.run.app/app/user/${parsedUser.clerkId}/addsearch`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clerkId: parsedUser.id,
-          query,
-        }),
+        body: JSON.stringify({ clerkId: parsedUser.clerkId, query }),
       }
     );
 
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Error adding search");
-    }
+    if (!response.ok) throw new Error(data.message || "Error adding search");
   } catch (error) {
     console.error("❌ Error adding search:", error);
   }
 };
 
+// 🌀 Loading UI
 const LoadingIndicator = () => (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color="#007AFF" />
@@ -57,53 +52,62 @@ const LoadingIndicator = () => (
   </View>
 );
 
-/** 🔹 No Results Component */
-const NoResults = () => (
-  <View style={styles.noResultsContainer}>
-    <Text style={styles.noResultsText}>No results found.</Text>
+// 🛒 No Results UI
+const NoResults = ({ onRedirect }: { onRedirect: () => void }) => (
+  <View style={styles.emptyCart}>
+    <Image
+      source={require("@/assets/images/empty-search.png")}
+      style={styles.emptyImage}
+      resizeMode="contain"
+    />
+    <Text style={styles.emptyText}>Whoops! Your search is not found.</Text>
+    <Text style={styles.subText}>Let’s find something awesome to add!</Text>
+    <TouchableOpacity style={styles.searchButton} onPress={onRedirect}>
+      <Text style={styles.buttonText}>Browse Products</Text>
+    </TouchableOpacity>
   </View>
 );
 
-/** 🔹 Filter Buttons Component */
-const FilterButtons = ({
-  filterType,
-  setFilterType,
+// 🔽 Sort Picker
+const SortPicker = ({
+  sortOption,
+  setSortOption,
 }: {
-  filterType: "name" | "price";
-  setFilterType: (type: "name" | "price") => void;
+  sortOption: string;
+  setSortOption: (value: string) => void;
 }) => (
-  <View style={styles.filterContainer}>
-    <Text style={styles.filterText}>Filter By</Text>
-    <View style={styles.filterButtonContainer}>
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => setFilterType("name")}
-      >
-        <Text style={styles.filterButtonText}>
-          Name {filterType === "name" ? "✓" : ""}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => setFilterType("price")}
-      >
-        <Text style={styles.filterButtonText}>
-          Price {filterType === "price" ? "✓" : ""}
-        </Text>
-      </TouchableOpacity>
-    </View>
+  <View style={styles.pickerContainer}>
+    <Text style={styles.filterText}>Sort By:</Text>
+    <Picker
+      selectedValue={sortOption}
+      style={styles.picker}
+      onValueChange={(itemValue) => setSortOption(itemValue)}
+    >
+      <Picker.Item label="Relevance" value="relevance" />
+      <Picker.Item label="Price: Low to High" value="priceLowHigh" />
+      <Picker.Item label="Price: High to Low" value="priceHighLow" />
+    </Picker>
   </View>
 );
 
-/** 🔹 Main SearchBar Component */
 const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState([]);
-  const [filterType, setFilterType] = useState<"name" | "price">("name");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sortOption, setSortOption] = useState("relevance");
 
-  // 🔹 Load recent searches
+  const router = useRouter();
+  const inputRef = useRef<TextInput>(null);
+
+  const handleSearchRedirect = () => {
+    router.push("/tabs/home");
+  };
+
+  useEffect(() => {
+    if (inputRef.current) inputRef.current.focus();
+  }, []);
+
   useEffect(() => {
     const loadRecentSearches = async () => {
       const storedSearches = await AsyncStorage.getItem("recentSearches");
@@ -112,11 +116,11 @@ const SearchBar = () => {
     loadRecentSearches();
   }, []);
 
-  /** 🔹 Save search query to recent */
   const saveRecentSearch = async (query: string) => {
+    const lowerQuery = query.toLowerCase();
     const updatedSearches = [
-      query,
-      ...recentSearches.filter((s) => s !== query),
+      lowerQuery,
+      ...recentSearches.filter((s) => s.toLowerCase() !== lowerQuery),
     ];
     const latestSearches = updatedSearches.slice(0, 5);
     setRecentSearches(latestSearches);
@@ -126,11 +130,8 @@ const SearchBar = () => {
     );
   };
 
-  /** 🔹 Fetch from both endpoints with city param */
   const fetchSearchResults = async (query: string) => {
     try {
-      setLoading(true);
-
       const cachedAddress = await AsyncStorage.getItem("cacheAddress");
       const parsedAddress = cachedAddress ? JSON.parse(cachedAddress) : null;
       const city = parsedAddress?.city || "";
@@ -151,16 +152,20 @@ const SearchBar = () => {
         }),
       ]);
 
+      if (!userRes.ok && !retailerRes.ok) {
+        throw new Error("Failed to fetch search results.");
+      }
+
       const userData = await userRes.json();
       const retailerData = await retailerRes.json();
 
       const userResults = userData.results || [];
       const retailerResults = retailerData.products || [];
 
-      const combinedResults = [...userResults, ...retailerResults];
-      setSearchResults(combinedResults);
+      const combined = [...retailerResults, ...userResults];
+      setSearchResults(combined);
     } catch (error) {
-      console.error("Error fetching search results:", error);
+      console.error("❌ Error fetching search results:", error);
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -174,11 +179,15 @@ const SearchBar = () => {
 
   const handleSearch = async (query?: string) => {
     const searchValue = query || searchQuery;
-    if (!searchValue.trim()) return;
+    if (!searchValue.trim()) {
+      Alert.alert("Enter something to search");
+      return;
+    }
 
     if (!query) await saveRecentSearch(searchValue);
-    await addSearchQuery(searchQuery);
-    fetchSearchResults(searchValue);
+    setLoading(true);
+    await addSearchQuery(searchValue);
+    await fetchSearchResults(searchValue);
   };
 
   const handleDeleteRecentSearch = async (query: string) => {
@@ -195,16 +204,24 @@ const SearchBar = () => {
     handleSearch(query);
   };
 
-  /** 🔹 Sorting results */
-  const sortedResults = [...searchResults].sort((a, b) =>
-    filterType === "name" ? a.title.localeCompare(b.title) : a.price - b.price
-  );
+  const getSortedResults = () => {
+    switch (sortOption) {
+      case "priceLowHigh":
+        return [...searchResults].sort((a, b) => a.price - b.price);
+      case "priceHighLow":
+        return [...searchResults].sort((a, b) => b.price - a.price);
+      default:
+        return searchResults;
+    }
+  };
+
+  const sortedResults = getSortedResults();
 
   return (
     <>
-      {/* 🔹 Search Input */}
       <View style={styles.inputContainer}>
         <TextInput
+          ref={inputRef}
           style={styles.input}
           placeholder="Search products..."
           value={searchQuery}
@@ -213,16 +230,15 @@ const SearchBar = () => {
           onSubmitEditing={() => handleSearch()}
         />
         <TouchableOpacity style={styles.button} onPress={() => handleSearch()}>
-          <Ionicons name="search" size={24} color="white" />
+          <Ionicons name="search" size={24} color={COLORS.WHITE} />
         </TouchableOpacity>
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
-            <Ionicons name="close-circle" size={24} color="#888" />
+            <Ionicons name="close-circle" size={24} color={COLORS.SECONDARY} />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* 🔹 Recent Searches */}
       {recentSearches.length > 0 &&
         !loading &&
         searchResults.length === 0 &&
@@ -234,24 +250,25 @@ const SearchBar = () => {
           />
         )}
 
-      {/* 🔹 Filter Toggle */}
       {searchResults.length > 0 && !loading && (
-        <FilterButtons filterType={filterType} setFilterType={setFilterType} />
+        <SortPicker sortOption={sortOption} setSortOption={setSortOption} />
       )}
 
-      {/* 🔹 Loader */}
       {loading && <LoadingIndicator />}
 
-      {/* 🔹 Search Results */}
       {!loading && searchResults.length > 0 ? (
         <FlatList
           data={sortedResults}
-          keyExtractor={(item, index) => index.toString()}
+          style={{ flex: 1, backgroundColor: COLORS.WHITE }}
+          keyExtractor={(item, index) =>
+            item.id?.toString() || index.toString()
+          }
           renderItem={({ item }) => <SearchElement itemDetails={item} />}
           contentContainerStyle={styles.resultsContainer}
         />
       ) : (
-        searchQuery.length > 0 && !loading && <NoResults />
+        searchQuery.length > 0 &&
+        !loading && <NoResults onRedirect={handleSearchRedirect} />
       )}
     </>
   );

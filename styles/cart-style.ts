@@ -8,13 +8,38 @@ export default StyleSheet.create({
     paddingTop: 20,
   },
   emptyCart: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    flex: 1,
+  },
+  emptyImage: {
+    width: "100%", // Make the image take the full width
+    height: 250, // Set a fixed height, adjust as needed
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: "bold",
+    marginTop: 20,
+    textAlign: "center",
+  },
+  subText: {
+    fontSize: 16,
     color: "#888",
+    marginTop: 8,
+    textAlign: "center",
+  },
+  searchButton: {
+    backgroundColor: COLORS.SECONDARY, // You can customize the button color
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   cartList: {
     paddingBottom: 10,
